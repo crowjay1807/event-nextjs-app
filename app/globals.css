@@ -14,13 +14,28 @@ body {
   transform: translateY(-10px) scale(0.95);
   transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   pointer-events: none;
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.25), 0 0 0 2px rgba(0,255,255,0.08);
+  border-radius: 1rem;
+  overflow: hidden;
+  max-width: 95vw;
 }
 
 .card:hover .tooltip {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0) scale(1);
+  transform: translateY(0) scale(1.03);
   pointer-events: auto;
+  z-index: 100;
+}
+
+@media (max-width: 600px) {
+  .tooltip {
+    width: 90vw !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
 }
 
 .card {
@@ -43,12 +58,14 @@ body {
   animation: fadeInUp 0.3s ease-out;
 }
 
-/* Glassmorphism effect for tooltip */
+/* Enhanced Glassmorphism and Tooltip Effects */
 .glass-effect {
-  background: rgba(17, 25, 40, 0.75);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.125);
+  background: rgba(17, 25, 40, 0.85);
+  backdrop-filter: blur(20px) saturate(200%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37), 0 0 0 2px rgba(0,255,255,0.08);
+  border-radius: 1rem;
 }
 
 /* Search suggestions dropdown */

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { EventItem } from '@/lib/types';
 import { Clock, MapPin, Gift, Bell, BellOff, Coins, DollarSign, Gem } from 'lucide-react';
 import { format } from 'date-fns';
@@ -15,6 +15,8 @@ export default function EventCard({ event, isUpcoming = false, onFollowToggle }:
   const [showTooltip, setShowTooltip] = useState(false);
   const [timeLeft, setTimeLeft] = useState<string>('');
   const [nextEventTime, setNextEventTime] = useState<Date | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [tooltipPosition, setTooltipPosition] = useState<'right' | 'left'>('right');
 
   // Extract currency rewards (Ruud, WC, GP)
   const getCurrencyRewards = () => {
@@ -76,8 +78,21 @@ export default function EventCard({ event, isUpcoming = false, onFollowToggle }:
     return () => clearInterval(interval);
   }, [event.times]);
 
+  useEffect(() => {
+    if (!showTooltip || !cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const tooltipWidth = 400; // Approximate width of tooltip
+    const spaceRight = window.innerWidth - rect.right;
+    if (spaceRight < tooltipWidth) {
+      setTooltipPosition('left');
+    } else {
+      setTooltipPosition('right');
+    }
+  }, [showTooltip]);
+
   return (
     <div 
+      ref={cardRef}
       className={`card ${isUpcoming ? 'border-2 border-green-600 rounded-lg' : ''}`}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
@@ -160,7 +175,7 @@ export default function EventCard({ event, isUpcoming = false, onFollowToggle }:
       </div>
 
       {/* Enhanced Tooltip with Glassmorphism */}
-      <div className={`tooltip absolute z-50 left-full ml-3 w-96 ${showTooltip ? '' : 'hidden'}`}
+      <div className={`tooltip absolute z-50 ${tooltipPosition === 'right' ? 'left-full ml-3' : 'right-full mr-3'} w-96 overflow-hidden ${showTooltip ? '' : 'hidden'}`}
            style={{ top: '50%', transform: 'translateY(-50%)' }}>
         <div className="glass-effect rounded-xl p-5 shadow-2xl border border-white/10">
           <div className="tooltip-content space-y-4">
