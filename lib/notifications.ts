@@ -26,7 +26,6 @@ export class NotificationService {
         body: message,
         icon: '/favicon.ico',
         badge: '/favicon.ico',
-        vibrate: important ? [200, 100, 200] : [100],
         requireInteraction: important,
         tag: important ? 'important' : 'normal'
       });
