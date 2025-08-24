@@ -24,10 +24,12 @@ export default function MainCountdown({ events }: MainCountdownProps) {
       events.forEach(event => {
         const upcomingTimes = event.times.filter(time => time > now);
         if (upcomingTimes.length > 0) {
-          const nextTime = upcomingTimes[0];
-          if (!nearestTime || nextTime < nearestTime) {
-            nearestTime = nextTime;
-            nearestEvent = event;
+          const nextTime = upcomingTimes[0] ?? null;
+          if (nextTime) {
+            if (!nearestTime || nextTime < nearestTime) {
+              nearestTime = nextTime;
+              nearestEvent = event;
+            }
           }
         }
       });
@@ -36,7 +38,7 @@ export default function MainCountdown({ events }: MainCountdownProps) {
       setNextEventTime(nearestTime);
       
       if (nearestTime) {
-        const totalSeconds = Math.floor((nearestTime.getTime() - now.getTime()) / 1000);
+        const totalSeconds = Math.floor(((nearestTime as Date).getTime() - now.getTime()) / 1000);
         
         if (totalSeconds <= 0) {
           setTimeLeft('Event Started!');
