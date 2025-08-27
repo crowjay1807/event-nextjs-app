@@ -1,26 +1,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { EventItem, mockEvents } from '@/lib/types';
+import { EventItem, mockEvents, getActiveEvents } from '@/lib/types';
+import { DatabaseService } from '@/lib/database';
 import EventCard from '@/components/EventCard';
 import SearchBar from '@/components/SearchBar';
-import AdminModal from '@/components/AdminModal';
-import MainCountdown from '@/components/MainCountdown';
+import PinnedEvents from '@/components/PinnedEvents';
+import ActiveEvents from '@/components/ActiveEvents';
 import { NotificationService } from '@/lib/notifications';
 import { StorageService } from '@/lib/storage';
-import { Plus, LogIn, LogOut, Edit2, Trash2, Bell, Settings } from 'lucide-react';
+import { Bell, BellOff, Sparkles } from 'lucide-react';
 
 export default function Home() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<EventItem[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<EventItem | null>(null);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [password, setPassword] = useState('');
+  const [pinnedEvents, setPinnedEvents] = useState<EventItem[]>([]);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [showAdminButton, setShowAdminButton] = useState(false);
+  const [dbVersion, setDbVersion] = useState(0);
 
   const sortEventsByTime = (eventsToSort: EventItem[]) => {
     return [...eventsToSort].sort((a, b) => {
@@ -33,38 +30,64 @@ export default function Home() {
 
   // Initialize events and load saved preferences
   useEffect(() => {
-    // Load followed events from localStorage
+    loadEventsFromDatabase();
+    
+    // Check for database updates periodically
+    const versionCheckInterval = setInterval(() => {
+      const currentVersion = DatabaseService.getVersion();
+      if (currentVersion !== dbVersion) {
+        loadEventsFromDatabase();
+      }
+    }, 5000); // Check every 5 seconds
+
+    // Enable notifications on desktop
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    return () => {
+      clearInterval(versionCheckInterval);
+    };
+  }, [dbVersion]);
+
+  const loadEventsFromDatabase = () => {
+    // Load events from database or use defaults
+    let loadedEvents: EventItem[];
+    
+    if (DatabaseService.hasBeenModified()) {
+      loadedEvents = DatabaseService.getEvents();
+    } else {
+      loadedEvents = mockEvents;
+      // Save default events to database on first load
+      DatabaseService.saveEvents(mockEvents);
+    }
+
+    // Load followed and pinned events from localStorage
     const followedEventIds = StorageService.getFollowedEvents();
+    const pinnedEventIds = StorageService.getPinnedEvents();
     const notificationPref = StorageService.getNotificationPreference();
     
-    // Update events with followed status
-    const eventsWithFollowStatus = mockEvents.map(event => ({
+    // Update events with followed and pinned status
+    const eventsWithStatus = loadedEvents.map(event => ({
       ...event,
-      following: followedEventIds.includes(event.id)
+      following: followedEventIds.includes(event.id),
+      pinned: pinnedEventIds.includes(event.id)
     }));
     
-    setEvents(eventsWithFollowStatus);
-    setFilteredEvents(sortEventsByTime(eventsWithFollowStatus));
+    setEvents(eventsWithStatus);
+    setFilteredEvents(sortEventsByTime(eventsWithStatus));
+    setPinnedEvents(eventsWithStatus.filter(e => e.pinned));
     setNotificationsEnabled(notificationPref);
+    setDbVersion(DatabaseService.getVersion());
     
     // Setup notifications for followed events if notifications are enabled
     if (notificationPref && 'Notification' in window && Notification.permission === 'granted') {
-      const followedEvents = eventsWithFollowStatus.filter(e => e.following);
+      const followedEvents = eventsWithStatus.filter(e => e.following);
       NotificationService.setupAllFollowedEvents(followedEvents);
     }
     
     setIsLoading(false);
-
-    // Secret key combination to show admin button (Ctrl+Shift+A)
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-        setShowAdminButton(true);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, []);
+  };
 
   // Auto-resort events every 30 seconds
   useEffect(() => {
@@ -89,7 +112,21 @@ export default function Home() {
         'Notifications Enabled',
         'You will receive event reminders for all followed events!'
       );
+    } else {
+      setNotificationsEnabled(false);
+      StorageService.saveNotificationPreference(false);
+      alert('Please enable notifications in your browser settings to receive event alerts.');
     }
+  };
+
+  const handleDisableNotifications = () => {
+    setNotificationsEnabled(false);
+    StorageService.saveNotificationPreference(false);
+    NotificationService.clearAllNotifications();
+    NotificationService.showNotification(
+      'Notifications Disabled',
+      'You will no longer receive event reminders.'
+    );
   };
 
   const handleFollowToggle = (eventId: string) => {
@@ -132,23 +169,58 @@ export default function Home() {
       });
       
       // Update filtered events as well
-      const currentFilter = filteredEvents.length !== events.length;
-      if (currentFilter) {
-        setFilteredEvents(prevFiltered => 
-          prevFiltered.map(event => {
-            const updated = updatedEvents.find(e => e.id === event.id);
-            return updated || event;
-          })
-        );
-      } else {
-        setFilteredEvents(sortEventsByTime(updatedEvents));
-      }
+      setFilteredEvents(prev => 
+        prev.map(event => {
+          const updated = updatedEvents.find(e => e.id === event.id);
+          return updated || event;
+        })
+      );
       
       return updatedEvents;
     });
   };
 
-  const handleSearch = (query: string, filter: 'all' | 'maps' | 'items' | 'name') => {
+  const handlePinToggle = (eventId: string) => {
+    setEvents(prevEvents => {
+      const updatedEvents = prevEvents.map(event => {
+        if (event.id === eventId) {
+          const newPinned = !event.pinned;
+          
+          if (newPinned) {
+            StorageService.addPinnedEvent(eventId);
+            NotificationService.showNotification(
+              'Event Pinned',
+              `${event.name} has been pinned to the top.`
+            );
+          } else {
+            StorageService.removePinnedEvent(eventId);
+            NotificationService.showNotification(
+              'Event Unpinned',
+              `${event.name} has been unpinned.`
+            );
+          }
+          
+          return { ...event, pinned: newPinned };
+        }
+        return event;
+      });
+      
+      // Update pinned events list
+      setPinnedEvents(updatedEvents.filter(e => e.pinned));
+      
+      // Update filtered events
+      setFilteredEvents(prev => 
+        prev.map(event => {
+          const updated = updatedEvents.find(e => e.id === event.id);
+          return updated || event;
+        })
+      );
+      
+      return updatedEvents;
+    });
+  };
+
+  const handleSearch = (query: string, filter: 'all' | 'items' | 'name') => {
     if (!query) {
       setFilteredEvents(sortEventsByTime(events));
       return;
@@ -161,11 +233,6 @@ export default function Home() {
       case 'name':
         filtered = events.filter(event =>
           event.name.toLowerCase().includes(lowerQuery)
-        );
-        break;
-      case 'maps':
-        filtered = events.filter(event =>
-          event.map.toLowerCase().includes(lowerQuery)
         );
         break;
       case 'items':
@@ -187,205 +254,107 @@ export default function Home() {
     setFilteredEvents(sortEventsByTime(filtered));
   };
 
-  const handleLogin = () => {
-    if (password === 'admin123') {
-      setIsAdmin(true);
-      setShowLoginModal(false);
-      setPassword('');
-    } else {
-      alert('Incorrect password!');
-    }
-  };
-
-  const handleLogout = () => {
-    setIsAdmin(false);
-  };
-
-  const handleSaveEvent = (event: EventItem) => {
-    if (editingEvent) {
-      setEvents(prev => prev.map(e => e.id === event.id ? event : e));
-    } else {
-      setEvents(prev => [...prev, { ...event, id: Date.now().toString() }]);
-    }
-    setEditingEvent(null);
-  };
-
-  const handleEditEvent = (event: EventItem) => {
-    setEditingEvent(event);
-    setIsModalOpen(true);
-  };
-
-  const handleDeleteEvent = (eventId: string) => {
-    if (confirm('Are you sure you want to delete this event?')) {
-      // Remove from localStorage if it was followed
-      StorageService.removeFollowedEvent(eventId);
-      NotificationService.clearEventNotification(eventId);
-      setEvents(prev => prev.filter(e => e.id !== eventId));
-    }
-  };
-
-  const handleAddNew = () => {
-    setEditingEvent(null);
-    setIsModalOpen(true);
-  };
-
   if (isLoading) {
     return (
-      <main className="min-h-screen p-4 bg-black flex items-center justify-center">
-        <div className="text-white text-2xl">Loading events...</div>
+      <main className="min-h-screen p-4 bg-gradient-to-b from-gray-950 to-black flex items-center justify-center">
+        <div className="text-white text-2xl animate-pulse">Loading events...</div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen p-4 bg-black">
+    <main className="min-h-screen p-4 bg-gradient-to-b from-gray-950 to-black">
       <div className="max-w-7xl mx-auto">
-        <MainCountdown events={filteredEvents} />
-      </div>
-
-      <div className="max-w-7xl mx-auto mb-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-4xl font-bold text-white">Invasion Events (GMT+7)</h1>
-          
-          <div className="flex gap-3">
-            <button
-              onClick={handleRequestNotifications}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-                notificationsEnabled
-                  ? 'bg-green-800 text-white hover:bg-green-700 border-green-600'
-                  : 'bg-yellow-800 text-white hover:bg-yellow-700 border-yellow-600'
-              }`}
-            >
-              <Bell className="w-5 h-5" />
-              {notificationsEnabled ? 'Notifications On' : 'Enable Notifications'}
-            </button>
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-8 h-8 text-purple-400" />
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                Invasion Events Tracker
+              </h1>
+            </div>
             
-            {/* Admin button - hidden by default */}
-            {showAdminButton && (
-              <>
-                {isAdmin ? (
-                  <>
-                    <button
-                      onClick={handleAddNew}
-                      className="flex items-center gap-2 bg-green-800 text-white px-4 py-2 rounded-lg hover:bg-green-700 border border-green-600 transition-colors"
-                    >
-                      <Plus className="w-5 h-5" />
-                      Add Event
-                    </button>
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-2 bg-red-800 text-white px-4 py-2 rounded-lg hover:bg-red-700 border border-red-600 transition-colors"
-                    >
-                      <LogOut className="w-5 h-5" />
-                      Logout
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={() => setShowLoginModal(true)}
-                    className="flex items-center gap-2 bg-blue-800 text-white px-4 py-2 rounded-lg hover:bg-blue-700 border border-blue-600 transition-colors"
-                  >
-                    <LogIn className="w-5 h-5" />
-                    Admin
-                  </button>
-                )}
-              </>
-            )}
+            <div className="flex gap-3">
+              {notificationsEnabled ? (
+                <button
+                  onClick={handleDisableNotifications}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border transition-all bg-green-800/50 backdrop-blur text-white hover:bg-green-700/50 border-green-600"
+                >
+                  <Bell className="w-5 h-5" />
+                  Notifications On
+                </button>
+              ) : (
+                <button
+                  onClick={handleRequestNotifications}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border transition-all bg-yellow-800/50 backdrop-blur text-white hover:bg-yellow-700/50 border-yellow-600 animate-pulse"
+                >
+                  <BellOff className="w-5 h-5" />
+                  Enable Notifications
+                </button>
+              )}
+              
+              {/* Admin access via /admin route */}
+              <a
+                href="/admin"
+                className="hidden"
+              >
+                Admin
+              </a>
+            </div>
           </div>
+
+          {/* Pinned Events */}
+          <PinnedEvents 
+            events={pinnedEvents}
+            onUnpin={handlePinToggle}
+          />
+
+          {/* Active Events Section - Moved here below Pinned */}
+          <ActiveEvents events={events} />
         </div>
 
+        {/* Search Bar */}
         <SearchBar onSearch={handleSearch} events={events} />
         
-        {/* Show count of followed events */}
-        {events.filter(e => e.following).length > 0 && (
-          <div className="text-gray-400 text-sm mb-4">
-            Following {events.filter(e => e.following).length} events
+        {/* Statistics */}
+        <div className="flex gap-4 mb-6 text-sm">
+          <div className="text-gray-400">
+            <span className="text-purple-400 font-bold">{events.length}</span> Total Events
           </div>
-        )}
-      </div>
+          <div className="text-gray-400">
+            <span className="text-green-400 font-bold">{events.filter(e => e.following).length}</span> Following
+          </div>
+          <div className="text-gray-400">
+            <span className="text-blue-400 font-bold">{pinnedEvents.length}</span> Pinned
+          </div>
+          <div className="text-gray-400">
+            <span className="text-yellow-400 font-bold">{getActiveEvents(events).length}</span> Active Now
+          </div>
+        </div>
 
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredEvents.map((event, index) => (
-            <div key={event.id} className="relative group">
+        {/* All Events Grid */}
+        <div>
+          <h2 className="text-xl font-bold text-white mb-4">All Events</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredEvents.map((event, index) => (
               <EventCard 
+                key={event.id}
                 event={event} 
-                isUpcoming={index === 0}
+                isUpcoming={index === 0 && !getActiveEvents(events).some(e => e.id === event.id)}
                 onFollowToggle={handleFollowToggle}
+                onPinToggle={handlePinToggle}
               />
-              
-              {isAdmin && (
-                <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                  <button
-                    onClick={() => handleEditEvent(event)}
-                    className="p-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600 border border-blue-600"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteEvent(event.id)}
-                    className="p-2 bg-red-700 text-white rounded-lg hover:bg-red-600 border border-red-600"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {filteredEvents.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-400 text-lg">No events found matching your search.</p>
+            ))}
           </div>
-        )}
+
+          {filteredEvents.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-400 text-lg">No events found matching your search.</p>
+            </div>
+          )}
+        </div>
       </div>
-
-      <AdminModal
-        event={editingEvent}
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setEditingEvent(null);
-        }}
-        onSave={handleSaveEvent}
-      />
-
-      {showLoginModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-lg p-6 max-w-sm w-full border border-gray-700">
-            <h2 className="text-xl font-bold mb-4 text-white">Admin Login</h2>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-              placeholder="Enter admin password"
-              className="w-full p-2 bg-gray-800 text-white border border-gray-700 rounded-lg mb-4 focus:border-gray-600 focus:outline-none"
-            />
-            <div className="flex gap-3">
-              <button
-                onClick={handleLogin}
-                className="flex-1 bg-gray-700 text-white py-2 rounded-lg hover:bg-gray-600 border border-gray-600 transition-colors"
-              >
-                Login
-              </button>
-              <button
-                onClick={() => {
-                  setShowLoginModal(false);
-                  setPassword('');
-                }}
-                className="flex-1 bg-gray-800 text-white py-2 rounded-lg hover:bg-gray-700 border border-gray-700 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-            <p className="text-xs text-gray-500 mt-3 text-center">
-              Hint: Use "admin123" for demo
-            </p>
-          </div>
-        </div>
-      )}
     </main>
   );
 }

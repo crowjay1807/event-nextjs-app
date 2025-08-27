@@ -1,22 +1,25 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { EventItem } from '@/lib/types';
-import { Clock, MapPin, Gift, Bell, BellOff, Coins, DollarSign, Gem } from 'lucide-react';
+import { EventItem, isEventActive } from '@/lib/types';
+import { Clock, MapPin, Gift, Bell, BellOff, Coins, DollarSign, Gem, Pin, PinOff } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface EventCardProps {
   event: EventItem;
   isUpcoming?: boolean;
   onFollowToggle: (eventId: string) => void;
+  onPinToggle: (eventId: string) => void;
 }
 
-export default function EventCard({ event, isUpcoming = false, onFollowToggle }: EventCardProps) {
+export default function EventCard({ event, isUpcoming = false, onFollowToggle, onPinToggle }: EventCardProps) {
   const [showTooltip, setShowTooltip] = useState(false);
   const [timeLeft, setTimeLeft] = useState<string>('');
   const [nextEventTime, setNextEventTime] = useState<Date | null>(null);
+  const [isActive, setIsActive] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState<'left' | 'right'>('right');
   const cardRef = useRef<HTMLDivElement>(null);
-  const [tooltipPosition, setTooltipPosition] = useState<'right' | 'left'>('right');
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   // Extract currency rewards (Ruud, WC, GP)
   const getCurrencyRewards = () => {
@@ -46,9 +49,30 @@ export default function EventCard({ event, isUpcoming = false, onFollowToggle }:
     return !lower.includes('ruud') && !lower.includes('wc') && !lower.includes('gp');
   });
 
+  // Check tooltip position
+  useEffect(() => {
+    if (showTooltip && cardRef.current) {
+      const cardRect = cardRef.current.getBoundingClientRect();
+      const tooltipWidth = 384; // w-96 = 24rem = 384px
+      const windowWidth = window.innerWidth;
+      
+      // If card is on the right side of screen, show tooltip on left
+      if (cardRect.right + tooltipWidth + 20 > windowWidth) {
+        setTooltipPosition('left');
+      } else {
+        setTooltipPosition('right');
+      }
+    }
+  }, [showTooltip]);
+
   useEffect(() => {
     const updateCountdown = () => {
       const now = new Date();
+      
+      // Check if event is currently active
+      const activeTime = event.times.find(time => isEventActive(time));
+      setIsActive(!!activeTime);
+      
       const upcomingTimes = event.times.filter(time => time > now);
       
       if (upcomingTimes.length > 0) {
@@ -78,34 +102,47 @@ export default function EventCard({ event, isUpcoming = false, onFollowToggle }:
     return () => clearInterval(interval);
   }, [event.times]);
 
-  useEffect(() => {
-    if (!showTooltip || !cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const tooltipWidth = 400; // Approximate width of tooltip
-    const spaceRight = window.innerWidth - rect.right;
-    if (spaceRight < tooltipWidth) {
-      setTooltipPosition('left');
-    } else {
-      setTooltipPosition('right');
-    }
-  }, [showTooltip]);
-
   return (
     <div 
       ref={cardRef}
-      className={`card ${isUpcoming ? 'border-2 border-green-600 rounded-lg' : ''}`}
+      className={`card relative ${isUpcoming ? 'border-2 border-green-600 rounded-lg' : ''} ${isActive ? 'ring-2 ring-green-500 ring-opacity-50' : ''}`}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
     >
-      <div className="bg-gray-900 rounded-lg border border-gray-700 p-4 h-full">
+      <div className="bg-gray-900/90 backdrop-blur rounded-lg border border-gray-700 p-4 h-full hover:border-gray-600 transition-all">
         <div className="space-y-3">
-          {isUpcoming && (
-            <div className="text-xs bg-green-600 text-white px-2 py-1 rounded inline-block">
-              NEXT EVENT
+          {/* Header with badges */}
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              {isUpcoming && (
+                <div className="text-xs bg-green-600 text-white px-2 py-1 rounded inline-block mb-1">
+                  NEXT EVENT
+                </div>
+              )}
+              {isActive && (
+                <div className="text-xs bg-red-600 text-white px-2 py-1 rounded inline-block mb-1 animate-pulse">
+                  LIVE NOW
+                </div>
+              )}
+              <h3 className="text-lg font-bold text-white">{event.name}</h3>
             </div>
-          )}
-          
-          <h3 className="text-lg font-bold text-white">{event.name}</h3>
+            
+            {/* Pin Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onPinToggle(event.id);
+              }}
+              className={`p-1.5 rounded-lg transition-colors ${
+                event.pinned 
+                  ? 'bg-purple-600 hover:bg-purple-700 text-white' 
+                  : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+              }`}
+              title={event.pinned ? 'Unpin' : 'Pin to top'}
+            >
+              {event.pinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
+            </button>
+          </div>
           
           <div className="flex items-center text-gray-400 text-sm">
             <MapPin className="w-4 h-4 mr-1" />
@@ -156,7 +193,7 @@ export default function EventCard({ event, isUpcoming = false, onFollowToggle }:
           </button>
 
           {nextEventTime && (
-            <div className="bg-gray-800 rounded p-2 border border-gray-700">
+            <div className="bg-gray-800/50 rounded p-2 border border-gray-700">
               <p className="text-xs text-gray-500 mb-1">Next Event:</p>
               <p className="text-sm font-semibold text-gray-300">
                 Today {format(nextEventTime, 'HH:mm')}
@@ -164,19 +201,28 @@ export default function EventCard({ event, isUpcoming = false, onFollowToggle }:
             </div>
           )}
 
-          <div className="bg-gray-800 text-white rounded p-3 text-center border border-gray-700">
+          <div className={`${isActive ? 'bg-gradient-to-r from-green-800 to-emerald-800' : 'bg-gray-800'} text-white rounded p-3 text-center border ${isActive ? 'border-green-600' : 'border-gray-700'}`}>
             <div className="flex items-center justify-center mb-1">
               <Clock className="w-4 h-4 mr-1" />
-              <span className="text-xs">Time Until Event</span>
+              <span className="text-xs">{isActive ? 'Event Active!' : 'Time Until Event'}</span>
             </div>
-            <div className="text-xl font-bold font-mono">{timeLeft}</div>
+            <div className="text-xl font-bold font-mono">{isActive ? 'LIVE' : timeLeft}</div>
           </div>
         </div>
       </div>
 
-      {/* Enhanced Tooltip with Glassmorphism */}
-      <div className={`tooltip absolute z-50 ${tooltipPosition === 'right' ? 'left-full ml-3' : 'right-full mr-3'} w-96 overflow-hidden ${showTooltip ? '' : 'hidden'}`}
-           style={{ top: '50%', transform: 'translateY(-50%)' }}>
+      {/* Enhanced Tooltip with Glassmorphism - Position aware */}
+      <div 
+        ref={tooltipRef}
+        className={`tooltip absolute z-50 w-96 ${showTooltip ? '' : 'hidden'} ${
+          tooltipPosition === 'left' ? 'right-full mr-3' : 'left-full ml-3'
+        }`}
+        style={{ 
+          top: '50%', 
+          transform: 'translateY(-50%)',
+          maxWidth: 'min(384px, calc(100vw - 2rem))'
+        }}
+      >
         <div className="glass-effect rounded-xl p-5 shadow-2xl border border-white/10">
           <div className="tooltip-content space-y-4">
             {/* Location Section */}

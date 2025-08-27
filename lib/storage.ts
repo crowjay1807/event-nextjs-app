@@ -1,5 +1,6 @@
 export class StorageService {
   private static readonly FOLLOWED_EVENTS_KEY = 'followedEvents';
+  private static readonly PINNED_EVENTS_KEY = 'pinnedEvents';
   private static readonly NOTIFICATIONS_ENABLED_KEY = 'notificationsEnabled';
 
   // Save followed events to localStorage
@@ -22,6 +23,54 @@ export class StorageService {
       }
     }
     return [];
+  }
+
+  // Save pinned events to localStorage
+  static savePinnedEvents(eventIds: string[]): void {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.PINNED_EVENTS_KEY, JSON.stringify(eventIds));
+    }
+  }
+
+  // Get pinned events from localStorage
+  static getPinnedEvents(): string[] {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(this.PINNED_EVENTS_KEY);
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          console.error('Error parsing pinned events:', e);
+        }
+      }
+    }
+    return [];
+  }
+
+  // Add a pinned event
+  static addPinnedEvent(eventId: string): void {
+    const events = this.getPinnedEvents();
+    if (!events.includes(eventId)) {
+      // Limit to 4 pinned events
+      if (events.length >= 4) {
+        events.shift(); // Remove oldest
+      }
+      events.push(eventId);
+      this.savePinnedEvents(events);
+    }
+  }
+
+  // Remove a pinned event
+  static removePinnedEvent(eventId: string): void {
+    const events = this.getPinnedEvents();
+    const filtered = events.filter(id => id !== eventId);
+    this.savePinnedEvents(filtered);
+  }
+
+  // Check if an event is pinned
+  static isEventPinned(eventId: string): boolean {
+    const events = this.getPinnedEvents();
+    return events.includes(eventId);
   }
 
   // Save notification preference

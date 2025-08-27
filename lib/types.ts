@@ -7,6 +7,7 @@ export interface EventItem {
   image?: string;
   description?: string;
   following?: boolean;
+  pinned?: boolean; // Add pinned property
 }
 
 // Helper function to create today's date with specific time (GMT+7)
@@ -101,10 +102,11 @@ export const mockEvents: EventItem[] = [
     id: '1',
     name: 'Ruud COW Appears!',
     map: 'Lorencia',
-    items: ['100 ~ 300 Ruud'],
+    items: ['100 ~ 1000 Ruud'],
     times: createHourlyEvents(),
     description: 'Invasion Event - Spawns every hour',
-    following: false
+    following: false,
+    pinned: false
   },
   {
     id: '2',
@@ -118,16 +120,18 @@ export const mockEvents: EventItem[] = [
     ],
     times: createEventTimes(['00:30', '03:30', '06:30', '16:30', '19:30', '21:30']),
     description: 'Invasion Event',
-    following: false
+    following: false,
+    pinned: false
   },
   {
     id: '3',
     name: 'Power Chicken!',
     map: 'Noria',
-    items: ['100 WC', '1 ~ 1000 Ruud'],
+    items: ['150 WC', '200 ~ 2500 Ruud'],
     times: createEvery3HoursEvents(),
     description: 'Invasion Event - Every 3 hours',
-    following: false
+    following: false,
+    pinned: false
   },
   {
     id: '4',
@@ -147,16 +151,18 @@ export const mockEvents: EventItem[] = [
     ],
     times: createEventTimes(['03:00', '06:00', '16:30', '19:30']),
     description: 'Invasion Event',
-    following: false
+    following: false,
+    pinned: false
   },
   {
     id: '5',
     name: 'White Sheep',
     map: 'Elbeland',
-    items: ['300 GP', '1 ~ 1000 Ruud'],
+    items: ['300 GP', '300 ~ 2000 Ruud'],
     times: createEventTimes(['01:00', '03:00', '15:30', '20:00', '22:30']),
     description: 'Invasion Event',
-    following: false
+    following: false,
+    pinned: false
   },
   {
     id: '6',
@@ -171,7 +177,8 @@ export const mockEvents: EventItem[] = [
     ],
     times: createEventTimes(['01:30', '04:00', '17:00', '20:30']),
     description: 'Invasion Event',
-    following: false
+    following: false,
+    pinned: false
   },
   {
     id: '7',
@@ -189,25 +196,28 @@ export const mockEvents: EventItem[] = [
     ],
     times: createEventTimes(['02:30', '05:00', '16:00', '21:00']),
     description: 'Invasion Event',
-    following: false
+    following: false,
+    pinned: false
   },
   {
     id: '8',
     name: 'Green Puppy',
     map: 'Noria',
-    items: ['20 GP', '1 ~ 100 Ruud'],
+    items: ['50 GP', '200 ~ 1000 Ruud'],
     times: createHourlyEvents(),
     description: 'Invasion Event - Every hour',
-    following: false
+    following: false,
+    pinned: false
   },
   {
     id: '9',
     name: 'Red Cow',
     map: 'Scorched Canyon',
-    items: ['150 WC', '500 ~ 1500 Ruud'],
+    items: ['300 WC', '1000 ~ 2500 Ruud'],
     times: createEventTimes(['03:45', '06:45', '19:45', '22:45']),
     description: 'Invasion Event',
-    following: false
+    following: false,
+    pinned: false
   },
   {
     id: '10',
@@ -217,12 +227,13 @@ export const mockEvents: EventItem[] = [
       '[Bound] Shining Temple Guard Reinforcement Stone',
       'Ability Crystal (Durability: 1/2/3/5)',
       'Artifact Enchantment Stone (Durability: 1/3/5)',
-      'Spider Artifact Fragment (Durability: 5)',
+      'Spider Artifact Fragment',
       'Ability Enhancement Stone (Durability: 1/3/5)'
     ],
     times: createEventTimes(['07:25', '09:25', '11:25', '13:25']),
     description: 'Invasion Event',
-    following: false
+    following: false,
+    pinned: false
   },
   {
     id: '11',
@@ -243,7 +254,8 @@ export const mockEvents: EventItem[] = [
     ],
     times: createEventTimes(['06:25', '08:25', '10:25', '12:00']),
     description: 'Invasion Event',
-    following: false
+    following: false,
+    pinned: false
   },
   {
     id: '12',
@@ -279,7 +291,8 @@ export const mockEvents: EventItem[] = [
     ],
     times: createEventTimes(['00:00', '06:00', '12:00', '18:00']),
     description: 'Invasion Event',
-    following: false
+    following: false,
+    pinned: false
   },
   {
     id: '13',
@@ -288,7 +301,8 @@ export const mockEvents: EventItem[] = [
     items: ['1000 WC', '2000 ~ 5000 Ruud'],
     times: createEventTimes(['02:00']),
     description: 'Invasion Event - Daily at 07:00 AM (GMT+7)',
-    following: false
+    following: false,
+    pinned: false
   },
   {
     id: '14',
@@ -310,7 +324,8 @@ export const mockEvents: EventItem[] = [
     ],
     times: createEventTimes(['02:30', '08:30', '15:30', '20:30']),
     description: 'Invasion Event',
-    following: false
+    following: false,
+    pinned: false
   },
   {
     id: '15',
@@ -329,7 +344,8 @@ export const mockEvents: EventItem[] = [
     ],
     times: createHalfHourlyEvents(),
     description: 'Invasion Event - Every hour at :30',
-    following: false
+    following: false,
+    pinned: false
   },
   {
     id: '16',
@@ -351,7 +367,8 @@ export const mockEvents: EventItem[] = [
     ],
     times: createEventTimes(['04:30', '09:30', '13:30', '18:30', '23:30']),
     description: 'Invasion Event',
-    following: false
+    following: false,
+    pinned: false
   },
   {
     id: '17',
@@ -367,6 +384,21 @@ export const mockEvents: EventItem[] = [
     ],
     times: createEventTimes(['04:30', '09:30', '13:30', '18:30', '23:30']),
     description: 'Invasion Event',
-    following: false
+    following: false,
+    pinned: false
   }
 ];
+
+// Function to check if an event is currently active (within 15 minutes of start)
+export function isEventActive(eventTime: Date): boolean {
+  const now = new Date();
+  const timeDiff = (now.getTime() - eventTime.getTime()) / 1000 / 60; // difference in minutes
+  return timeDiff >= 0 && timeDiff <= 15; // Event is active for 15 minutes
+}
+
+// Get all currently active events
+export function getActiveEvents(events: EventItem[]): EventItem[] {
+  return events.filter(event => 
+    event.times.some(time => isEventActive(time))
+  );
+}
