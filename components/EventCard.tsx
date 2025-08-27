@@ -115,7 +115,7 @@ export default function EventCard({ event, isUpcoming = false, onFollowToggle, o
           NEXT EVENT
         </div>
       )}
-      <div className="bg-gray-900/90 backdrop-blur rounded-lg border border-gray-700 p-4 h-full hover:border-gray-600 transition-all">
+      <div className={`bg-gray-900/90 backdrop-blur rounded-lg border border-gray-700 p-4 h-full hover:border-gray-600 transition-all ${isUpcoming ? 'pt-12' : ''}`}>
         <div className="space-y-3">
           {/* Header with badges */}
           <div className="flex justify-between items-start">
