@@ -262,6 +262,13 @@ export default function Home() {
     );
   }
 
+  // Tìm thời gian event sắp diễn ra gần nhất
+  const now = new Date();
+  const nextTimes = filteredEvents
+    .map(event => event.times.filter(t => t > now)[0])
+    .filter(Boolean);
+  const minNextTime = nextTimes.length > 0 ? new Date(Math.min(...nextTimes.map(t => t.getTime()))) : null;
+
   return (
     <main className="min-h-screen p-4 bg-gradient-to-b from-gray-950 to-black">
       <div className="max-w-7xl mx-auto">
@@ -337,15 +344,19 @@ export default function Home() {
         <div>
           <h2 className="text-xl font-bold text-white mb-4">All Events</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredEvents.map((event, index) => (
-              <EventCard 
-                key={event.id}
-                event={event} 
-                isUpcoming={index === 0 && !getActiveEvents(events).some(e => e.id === event.id)}
-                onFollowToggle={handleFollowToggle}
-                onPinToggle={handlePinToggle}
-              />
-            ))}
+            {filteredEvents.map((event) => {
+              const eventNextTime = event.times.filter(t => t > now)[0];
+              const isUpcoming = minNextTime && eventNextTime && eventNextTime.getTime() === minNextTime.getTime() && !getActiveEvents(events).some(e => e.id === event.id);
+              return (
+                <EventCard 
+                  key={event.id}
+                  event={event} 
+                  isUpcoming={isUpcoming}
+                  onFollowToggle={handleFollowToggle}
+                  onPinToggle={handlePinToggle}
+                />
+              );
+            })}
           </div>
 
           {filteredEvents.length === 0 && (

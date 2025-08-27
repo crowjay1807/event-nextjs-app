@@ -109,16 +109,17 @@ export default function EventCard({ event, isUpcoming = false, onFollowToggle, o
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
     >
+      {isUpcoming && (
+        <div className="absolute left-3 top-3 z-10 flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-cyan-400 to-blue-600 shadow-lg text-white font-bold text-sm tracking-wide animate-pulse ring-2 ring-blue-400/60">
+          <Clock className="w-4 h-4 mr-1 animate-spin-slow" />
+          NEXT EVENT
+        </div>
+      )}
       <div className="bg-gray-900/90 backdrop-blur rounded-lg border border-gray-700 p-4 h-full hover:border-gray-600 transition-all">
         <div className="space-y-3">
           {/* Header with badges */}
           <div className="flex justify-between items-start">
             <div className="flex-1">
-              {isUpcoming && (
-                <div className="text-xs bg-green-600 text-white px-2 py-1 rounded inline-block mb-1">
-                  NEXT EVENT
-                </div>
-              )}
               {isActive && (
                 <div className="text-xs bg-red-600 text-white px-2 py-1 rounded inline-block mb-1 animate-pulse">
                   LIVE NOW
