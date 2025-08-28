@@ -105,16 +105,15 @@ export default function EventCard({ event, isUpcoming = false, onFollowToggle, o
   return (
     <div 
       ref={cardRef}
-      className={`card relative ${isActive ? 'ring-2 ring-green-500 ring-opacity-50' : ''}`}
+      className={`card relative h-full ${isActive ? 'ring-2 ring-green-500 ring-opacity-50' : ''}`}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
     >
-      <div className={`bg-gray-900/90 backdrop-blur rounded-xl border ${isUpcoming && !isActive ? 'border-blue-500/50' : 'border-gray-700'} hover:border-gray-600 transition-all duration-300 overflow-hidden`}>
-        {/* Card Header with Badges */}
-        <div className="relative">
-          {/* Status Badges Row */}
-          {(isUpcoming || isActive || event.pinned) && (
-            <div className="flex gap-2 p-3 pb-0">
+      <div className={`h-full flex flex-col bg-gray-900/90 backdrop-blur rounded-xl border ${isUpcoming && !isActive ? 'border-blue-500/50' : 'border-gray-700'} hover:border-gray-600 transition-all duration-300 overflow-hidden`}>
+        {/* Status Badges Row - Fixed Height */}
+        <div className="min-h-[44px] flex items-center">
+          {(isUpcoming || isActive || event.pinned) ? (
+            <div className="flex gap-2 px-3 py-2">
               {isActive && (
                 <div className="inline-flex items-center gap-1 text-xs bg-red-600/20 border border-red-500/50 text-red-400 px-2 py-1 rounded-full">
                   <Zap className="w-3 h-3 animate-pulse" />
@@ -134,61 +133,73 @@ export default function EventCard({ event, isUpcoming = false, onFollowToggle, o
                 </div>
               )}
             </div>
+          ) : (
+            <div className="px-3 py-2">&nbsp;</div>
           )}
-          
-          {/* Card Content */}
-          <div className="p-4 space-y-3">
-            {/* Title and Pin Button */}
-            <div className="flex justify-between items-start gap-2">
-              <h3 className="text-lg font-bold text-white flex-1">{event.name}</h3>
-              
-              {/* Pin Button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onPinToggle(event.id);
-                }}
-                className={`p-2 rounded-lg transition-all duration-200 ${
-                  event.pinned 
-                    ? 'bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 border border-purple-500/50' 
-                    : 'bg-gray-800/50 hover:bg-gray-700/50 text-gray-400 border border-gray-700'
-                }`}
-                title={event.pinned ? 'Unpin' : 'Pin to top'}
-              >
-                {event.pinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
-              </button>
-            </div>
+        </div>
+        
+        {/* Card Content - Flex Grow */}
+        <div className="flex-1 flex flex-col p-4 pt-0 space-y-3">
+          {/* Title and Pin Button - Fixed Height */}
+          <div className="flex justify-between items-start gap-2 min-h-[32px]">
+            <h3 className="text-lg font-bold text-white flex-1 line-clamp-2">{event.name}</h3>
             
-            {/* Location */}
-            <div className="flex items-center text-gray-400 text-sm">
-              <MapPin className="w-4 h-4 mr-1.5" />
-              <span>{event.map}</span>
-            </div>
+            {/* Pin Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onPinToggle(event.id);
+              }}
+              className={`flex-shrink-0 p-2 rounded-lg transition-all duration-200 ${
+                event.pinned 
+                  ? 'bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 border border-purple-500/50' 
+                  : 'bg-gray-800/50 hover:bg-gray-700/50 text-gray-400 border border-gray-700'
+              }`}
+              title={event.pinned ? 'Unpin' : 'Pin to top'}
+            >
+              {event.pinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
+            </button>
+          </div>
+          
+          {/* Location - Fixed Height */}
+          <div className="flex items-center text-gray-400 text-sm min-h-[20px]">
+            <MapPin className="w-4 h-4 mr-1.5" />
+            <span>{event.map}</span>
+          </div>
 
-            {/* Currency Rewards Display */}
-            {(currencies.ruud || currencies.wc || currencies.gp) && (
+          {/* Currency Rewards Display - Fixed Height */}
+          <div className="min-h-[32px] flex items-center">
+            {(currencies.ruud || currencies.wc || currencies.gp) ? (
               <div className="flex gap-2 flex-wrap">
                 {currencies.ruud && (
                   <div className="bg-purple-900/30 border border-purple-700/50 px-2.5 py-1 rounded-lg text-xs text-purple-300 flex items-center gap-1.5">
                     <Gem className="w-3 h-3" />
-                    {currencies.ruud.replace(/ruud/i, 'Ruud')}
+                    <span className="whitespace-nowrap">{currencies.ruud.replace(/ruud/i, 'Ruud')}</span>
                   </div>
                 )}
                 {currencies.wc && (
                   <div className="bg-yellow-900/30 border border-yellow-700/50 px-2.5 py-1 rounded-lg text-xs text-yellow-300 flex items-center gap-1.5">
                     <Coins className="w-3 h-3" />
-                    {currencies.wc.replace(/wc/i, 'WC')}
+                    <span className="whitespace-nowrap">{currencies.wc.replace(/wc/i, 'WC')}</span>
                   </div>
                 )}
                 {currencies.gp && (
                   <div className="bg-green-900/30 border border-green-700/50 px-2.5 py-1 rounded-lg text-xs text-green-300 flex items-center gap-1.5">
                     <DollarSign className="w-3 h-3" />
-                    {currencies.gp.replace(/gp/i, 'GP')}
+                    <span className="whitespace-nowrap">{currencies.gp.replace(/gp/i, 'GP')}</span>
                   </div>
                 )}
               </div>
+            ) : (
+              <div className="text-xs text-gray-600">No currency rewards</div>
             )}
+          </div>
 
+          {/* Spacer to push content down */}
+          <div className="flex-1"></div>
+
+          {/* Bottom Section - Always at bottom */}
+          <div className="space-y-3">
             {/* Follow Button */}
             <button
               onClick={() => onFollowToggle(event.id)}
@@ -212,14 +223,12 @@ export default function EventCard({ event, isUpcoming = false, onFollowToggle, o
             </button>
 
             {/* Next Event Time */}
-            {nextEventTime && (
-              <div className="bg-gray-800/30 rounded-lg p-2.5 border border-gray-700/50">
-                <p className="text-xs text-gray-500 mb-0.5">Next Event:</p>
-                <p className="text-sm font-semibold text-gray-300">
-                  Today at {format(nextEventTime, 'HH:mm')}
-                </p>
-              </div>
-            )}
+            <div className="bg-gray-800/30 rounded-lg p-2.5 border border-gray-700/50">
+              <p className="text-xs text-gray-500 mb-0.5">Next Event:</p>
+              <p className="text-sm font-semibold text-gray-300">
+                {nextEventTime ? `Today at ${format(nextEventTime, 'HH:mm')}` : 'No scheduled time'}
+              </p>
+            </div>
 
             {/* Countdown Timer */}
             <div className={`relative rounded-lg p-3 text-center overflow-hidden ${
