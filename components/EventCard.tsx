@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { EventItem, isEventActive } from '@/lib/types';
-import { Clock, MapPin, Gift, Bell, BellOff, Coins, DollarSign, Gem, Pin, PinOff } from 'lucide-react';
+import { Clock, MapPin, Gift, Bell, BellOff, Coins, DollarSign, Gem, Pin, PinOff, Zap, Timer } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface EventCardProps {
@@ -105,109 +105,138 @@ export default function EventCard({ event, isUpcoming = false, onFollowToggle, o
   return (
     <div 
       ref={cardRef}
-      className={`card relative ${isUpcoming ? 'border-2 border-green-600 rounded-lg' : ''} ${isActive ? 'ring-2 ring-green-500 ring-opacity-50' : ''}`}
+      className={`card relative ${isActive ? 'ring-2 ring-green-500 ring-opacity-50' : ''}`}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
     >
-      {isUpcoming && (
-        <div className="absolute left-3 top-3 z-10 flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-cyan-400 to-blue-600 shadow-lg text-white font-bold text-sm tracking-wide animate-pulse ring-2 ring-blue-400/60">
-          <Clock className="w-4 h-4 mr-1 animate-spin-slow" />
-          NEXT EVENT
-        </div>
-      )}
-      <div className={`bg-gray-900/90 backdrop-blur rounded-lg border border-gray-700 p-4 h-full hover:border-gray-600 transition-all ${isUpcoming ? 'pt-12' : ''}`}>
-        <div className="space-y-3">
-          {/* Header with badges */}
-          <div className="flex justify-between items-start">
-            <div className="flex-1">
+      <div className={`bg-gray-900/90 backdrop-blur rounded-xl border ${isUpcoming && !isActive ? 'border-blue-500/50' : 'border-gray-700'} hover:border-gray-600 transition-all duration-300 overflow-hidden`}>
+        {/* Card Header with Badges */}
+        <div className="relative">
+          {/* Status Badges Row */}
+          {(isUpcoming || isActive || event.pinned) && (
+            <div className="flex gap-2 p-3 pb-0">
               {isActive && (
-                <div className="text-xs bg-red-600 text-white px-2 py-1 rounded inline-block mb-1 animate-pulse">
-                  LIVE NOW
+                <div className="inline-flex items-center gap-1 text-xs bg-red-600/20 border border-red-500/50 text-red-400 px-2 py-1 rounded-full">
+                  <Zap className="w-3 h-3 animate-pulse" />
+                  <span className="font-medium">LIVE NOW</span>
                 </div>
               )}
-              <h3 className="text-lg font-bold text-white">{event.name}</h3>
-            </div>
-            
-            {/* Pin Button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onPinToggle(event.id);
-              }}
-              className={`p-1.5 rounded-lg transition-colors ${
-                event.pinned 
-                  ? 'bg-purple-600 hover:bg-purple-700 text-white' 
-                  : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
-              }`}
-              title={event.pinned ? 'Unpin' : 'Pin to top'}
-            >
-              {event.pinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
-            </button>
-          </div>
-          
-          <div className="flex items-center text-gray-400 text-sm">
-            <MapPin className="w-4 h-4 mr-1" />
-            <span>{event.map}</span>
-          </div>
-
-          {/* Currency Rewards Display */}
-          <div className="flex gap-2 flex-wrap">
-            {currencies.ruud && (
-              <div className="bg-purple-900/50 px-2 py-1 rounded text-xs text-purple-300 flex items-center gap-1">
-                <Gem className="w-3 h-3" />
-                {currencies.ruud.replace(/ruud/i, 'Ruud')}
-              </div>
-            )}
-            {currencies.wc && (
-              <div className="bg-yellow-900/50 px-2 py-1 rounded text-xs text-yellow-300 flex items-center gap-1">
-                <Coins className="w-3 h-3" />
-                {currencies.wc.replace(/wc/i, 'WC')}
-              </div>
-            )}
-            {currencies.gp && (
-              <div className="bg-green-900/50 px-2 py-1 rounded text-xs text-green-300 flex items-center gap-1">
-                <DollarSign className="w-3 h-3" />
-                {currencies.gp.replace(/gp/i, 'GP')}
-              </div>
-            )}
-          </div>
-
-          <button
-            onClick={() => onFollowToggle(event.id)}
-            className={`w-full py-2 px-3 rounded text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
-              event.following 
-              ? 'bg-green-700 hover:bg-green-600 text-white' 
-              : 'bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-600'
-            }`}
-          >
-            {event.following ? (
-              <>
-                <Bell className="w-4 h-4" />
-                Following
-              </>
-            ) : (
-              <>
-                <BellOff className="w-4 h-4" />
-                Follow
-              </>
-            )}
-          </button>
-
-          {nextEventTime && (
-            <div className="bg-gray-800/50 rounded p-2 border border-gray-700">
-              <p className="text-xs text-gray-500 mb-1">Next Event:</p>
-              <p className="text-sm font-semibold text-gray-300">
-                Today {format(nextEventTime, 'HH:mm')}
-              </p>
+              {isUpcoming && !isActive && (
+                <div className="inline-flex items-center gap-1 text-xs bg-blue-600/20 border border-blue-500/50 text-blue-400 px-2 py-1 rounded-full">
+                  <Timer className="w-3 h-3" />
+                  <span className="font-medium">NEXT</span>
+                </div>
+              )}
+              {event.pinned && (
+                <div className="inline-flex items-center gap-1 text-xs bg-purple-600/20 border border-purple-500/50 text-purple-400 px-2 py-1 rounded-full">
+                  <Pin className="w-3 h-3" />
+                  <span className="font-medium">PINNED</span>
+                </div>
+              )}
             </div>
           )}
-
-          <div className={`${isActive ? 'bg-gradient-to-r from-green-800 to-emerald-800' : 'bg-gray-800'} text-white rounded p-3 text-center border ${isActive ? 'border-green-600' : 'border-gray-700'}`}>
-            <div className="flex items-center justify-center mb-1">
-              <Clock className="w-4 h-4 mr-1" />
-              <span className="text-xs">{isActive ? 'Event Active!' : 'Time Until Event'}</span>
+          
+          {/* Card Content */}
+          <div className="p-4 space-y-3">
+            {/* Title and Pin Button */}
+            <div className="flex justify-between items-start gap-2">
+              <h3 className="text-lg font-bold text-white flex-1">{event.name}</h3>
+              
+              {/* Pin Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPinToggle(event.id);
+                }}
+                className={`p-2 rounded-lg transition-all duration-200 ${
+                  event.pinned 
+                    ? 'bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 border border-purple-500/50' 
+                    : 'bg-gray-800/50 hover:bg-gray-700/50 text-gray-400 border border-gray-700'
+                }`}
+                title={event.pinned ? 'Unpin' : 'Pin to top'}
+              >
+                {event.pinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
+              </button>
             </div>
-            <div className="text-xl font-bold font-mono">{isActive ? 'LIVE' : timeLeft}</div>
+            
+            {/* Location */}
+            <div className="flex items-center text-gray-400 text-sm">
+              <MapPin className="w-4 h-4 mr-1.5" />
+              <span>{event.map}</span>
+            </div>
+
+            {/* Currency Rewards Display */}
+            {(currencies.ruud || currencies.wc || currencies.gp) && (
+              <div className="flex gap-2 flex-wrap">
+                {currencies.ruud && (
+                  <div className="bg-purple-900/30 border border-purple-700/50 px-2.5 py-1 rounded-lg text-xs text-purple-300 flex items-center gap-1.5">
+                    <Gem className="w-3 h-3" />
+                    {currencies.ruud.replace(/ruud/i, 'Ruud')}
+                  </div>
+                )}
+                {currencies.wc && (
+                  <div className="bg-yellow-900/30 border border-yellow-700/50 px-2.5 py-1 rounded-lg text-xs text-yellow-300 flex items-center gap-1.5">
+                    <Coins className="w-3 h-3" />
+                    {currencies.wc.replace(/wc/i, 'WC')}
+                  </div>
+                )}
+                {currencies.gp && (
+                  <div className="bg-green-900/30 border border-green-700/50 px-2.5 py-1 rounded-lg text-xs text-green-300 flex items-center gap-1.5">
+                    <DollarSign className="w-3 h-3" />
+                    {currencies.gp.replace(/gp/i, 'GP')}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Follow Button */}
+            <button
+              onClick={() => onFollowToggle(event.id)}
+              className={`w-full py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+                event.following 
+                ? 'bg-green-600/20 hover:bg-green-600/30 text-green-400 border border-green-500/50' 
+                : 'bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 border border-gray-700'
+              }`}
+            >
+              {event.following ? (
+                <>
+                  <Bell className="w-4 h-4" />
+                  <span>Following</span>
+                </>
+              ) : (
+                <>
+                  <BellOff className="w-4 h-4" />
+                  <span>Follow for Alerts</span>
+                </>
+              )}
+            </button>
+
+            {/* Next Event Time */}
+            {nextEventTime && (
+              <div className="bg-gray-800/30 rounded-lg p-2.5 border border-gray-700/50">
+                <p className="text-xs text-gray-500 mb-0.5">Next Event:</p>
+                <p className="text-sm font-semibold text-gray-300">
+                  Today at {format(nextEventTime, 'HH:mm')}
+                </p>
+              </div>
+            )}
+
+            {/* Countdown Timer */}
+            <div className={`relative rounded-lg p-3 text-center overflow-hidden ${
+              isActive 
+                ? 'bg-gradient-to-r from-green-900/40 to-emerald-900/40 border border-green-600/50' 
+                : 'bg-gradient-to-r from-gray-800/40 to-gray-900/40 border border-gray-700/50'
+            }`}>
+              <div className="relative z-10">
+                <div className="flex items-center justify-center mb-1 gap-1.5">
+                  <Clock className="w-4 h-4 text-gray-400" />
+                  <span className="text-xs text-gray-400">{isActive ? 'Event Active' : 'Countdown'}</span>
+                </div>
+                <div className="text-2xl font-bold font-mono text-white">
+                  {isActive ? 'LIVE' : timeLeft}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -273,7 +302,7 @@ export default function EventCard({ event, isUpcoming = false, onFollowToggle, o
                 {Array.from(new Set(event.times.map(time => format(time, 'HH:mm'))))
                   .slice(0, 12)
                   .map((timeStr, index) => (
-                    <span key={index} className="px-2 py-1 bg-blue-500/20 rounded text-xs text-blue-300 font-mono">
+                    <span key={index} className="px-2 py-1 bg-blue-500/20 rounded text-xs text-blue-300 font-mono border border-blue-500/30">
                       {timeStr}
                     </span>
                   ))}
