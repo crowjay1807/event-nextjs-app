@@ -1,8 +1,7 @@
 export interface EventItem {
   id: string;
   name: string;
-  map: string;
-  maps: string[];
+  map: string | string[];
   items: string[];
   times: Date[];
   image?: string;
