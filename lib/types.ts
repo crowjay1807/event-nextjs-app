@@ -84,7 +84,7 @@ function createHalfHourlyEvents(): Date[] {
 
 //Create events at :50 of every hour
 function create50HourlyEvents(): Date[] {
-  const date: Date[] = [];
+  const dates: Date[] = [];
   const now = new Date();
 
   for (let i = 0; i < 48; i++) { // Next 48 hours
@@ -101,7 +101,7 @@ function create50HourlyEvents(): Date[] {
 
 //Create events at :35 of every hour
 function create35HourlyEvents(): Date[] {
-  const date: Date[] = [];
+  const dates: Date[] = [];
   const now = new Date();
 
   for(let i = 0; i < 48; i++) { // Next 48 hours
