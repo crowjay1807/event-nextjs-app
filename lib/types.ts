@@ -82,6 +82,40 @@ function createHalfHourlyEvents(): Date[] {
   return dates;
 }
 
+//Create events at :50 of every hour
+function create50HourlyEvents(): Date[] {
+  const date: Date[] = [];
+  const now = new Date();
+
+  for (let i = 0; i < 48; i++) { // Next 48 hours
+    const date = new Date(now);
+    date.setHours(now.getHours() + i);
+    date.setMinutes(50, 0, 0);
+    if (date > now) {
+      dates.push(date);
+    }
+  }
+
+  return dates;
+}
+
+//Create events at :35 of every hour
+function create35HourlyEvents(): Date[] {
+  const date: Date[] = [];
+  const now = new Date();
+
+  for(let i = 0; i < 48; i++) { // Next 48 hours
+    const  date = new Date(now);
+    date.setHours(now.getHours() + i);
+    date.setMinutes(35, 0, 0);
+    if (date > now) {
+      dates.push(date);
+    }
+  }
+
+  return dates;
+}
+
 // Create events every 3 hours
 function createEvery3HoursEvents(): Date[] {
   const dates: Date[] = [];
@@ -384,6 +418,34 @@ export const mockEvents: EventItem[] = [
     ],
     times: createEventTimes(['04:30', '09:30', '13:30', '18:30', '23:30']),
     description: 'Invasion Event',
+    following: false,
+    pinned: false
+  }
+    {
+    id: '18',
+    name: 'Dead Fear',
+    map: 'Lorencia',
+    items: [
+      '50 WC',
+      'Jewel of Harmony',
+      'Gem Stone',
+    ],
+    times: create50HourlyEvents(),
+    description: 'Invasion Event - Every hour at :50',
+    following: false,
+    pinned: false
+  }
+    {
+    id: '19',
+    name: 'Jewel Puppy',
+    map: 'Noria',
+    items: [
+      'Jewels (Guaranted x2 Jewel)',
+      'Additional 1 ~ 3 random jewels',
+      'Low chance for Dark Jewel and Custom Jewel',
+    ],
+    times: create35HourlyEvents(),
+    description: 'Invasion Event - Every hour at :35',
     following: false,
     pinned: false
   }
