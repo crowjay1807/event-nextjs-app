@@ -242,12 +242,18 @@ export default function Home() {
         break;
       case 'all':
       default:
-        filtered = events.filter(event =>
+        filtered = events.filter(event => {
+          const mapCheck = Array.isArray(event.map)
+          ? event.map.some(m => m.toLowerCase().includes(lowerQuery))
+          : event.map.toLowerCase().includes(lowerQuery);
+
+          return (
           event.name.toLowerCase().includes(lowerQuery) ||
-          event.map.toLowerCase().includes(lowerQuery) ||
+          mapCheck ||
           event.items.some(item => item.toLowerCase().includes(lowerQuery)) ||
           (event.description && event.description.toLowerCase().includes(lowerQuery))
         );
+        });
         break;
     }
 

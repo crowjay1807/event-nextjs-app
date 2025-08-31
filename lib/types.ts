@@ -1,7 +1,7 @@
 export interface EventItem {
   id: string;
   name: string;
-  map: string;
+  map: string | string[];
   items: string[];
   times: Date[];
   image?: string;
@@ -83,10 +83,10 @@ function createHalfHourlyEvents(): Date[] {
 }
 
 // Create events at :50 of every hour
-function createEveryHour50MinuteEvents(): Date[] {
+function create50HourlyEvents(): Date[] {
   const dates: Date[] = [];
   const now = new Date();
-  
+
   for (let i = 0; i < 48; i++) { // Next 48 hours
     const date = new Date(now);
     date.setHours(now.getHours() + i);
@@ -95,40 +95,49 @@ function createEveryHour50MinuteEvents(): Date[] {
       dates.push(date);
     }
   }
-  
+
   return dates;
 }
 
 // Create events at :35 of every hour
-function createEveryHour35MinuteEvents(): Date[] {
+function create35HourlyEvents(): Date[] {
   const dates: Date[] = [];
   const now = new Date();
-  
-  for (let i = 0; i < 48; i++) { // Next 48 hours
-    const date = new Date(now);
+
+  for(let i = 0; i < 48; i++) { // Next 48 hours
+    const  date = new Date(now);
     date.setHours(now.getHours() + i);
     date.setMinutes(35, 0, 0);
     if (date > now) {
       dates.push(date);
     }
   }
-  
+
   return dates;
 }
 
-// Create events every 3 hours
+// Create events every 3 hours starting from 00:00 (GMT+2)
 function createEvery3HoursEvents(): Date[] {
   const dates: Date[] = [];
   const now = new Date();
   
-  for (let i = 0; i < 16; i++) { // Next 16 occurrences (48 hours)
-    const date = new Date(now);
-    date.setHours(now.getHours() + (i * 3));
-    date.setMinutes(0, 0, 0);
-    dates.push(date);
+  // Starting times in GMT+2: 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00
+  // Convert to GMT+7: 05:00, 08:00, 11:00, 14:00, 17:00, 20:00, 23:00, 02:00
+  const startingHours = [5, 8, 11, 14, 17, 20, 23, 2]; // GMT+7 hours
+  
+  for (let day = 0; day < 3; day++) { // Next 3 days
+    startingHours.forEach(hour => {
+      const date = new Date(now);
+      date.setDate(now.getDate() + day);
+      date.setHours(hour, 0, 0, 0);
+      
+      if (date > now) {
+        dates.push(date);
+      }
+    });
   }
   
-  return dates;
+  return dates.sort((a, b) => a.getTime() - b.getTime());
 }
 
 export const mockEvents: EventItem[] = [
@@ -163,7 +172,7 @@ export const mockEvents: EventItem[] = [
     map: 'Noria',
     items: ['150 WC', '200 ~ 2500 Ruud'],
     times: createEvery3HoursEvents(),
-    description: 'Invasion Event - Every 3 hours',
+    description: 'Invasion Event - Every 3 hours starting from 00:00 (GMT+2)',
     following: false,
     pinned: false
   },
@@ -421,36 +430,22 @@ export const mockEvents: EventItem[] = [
     following: false,
     pinned: false
   },
-  // NEW EVENTS ADDED
   {
     id: '18',
     name: 'Dead Fear Gems',
     map: 'Lorencia',
     items: [
-      '50wc',
+      '50 WC',
       'Jewel of Harmony',
       'Gemstone'
     ],
-    times: createEveryHour50MinuteEvents(),
-    description: 'Invasion Event - Every hour at minute :50',
+    times: create50HourlyEvents(),
+    description: 'Invasion Event - Every hour at :50',
     following: false,
     pinned: false
   },
   {
     id: '19',
-    name: 'Pouch of Blessing',
-    map: 'Lorencia, Noria, Devias, Elbeland',
-    items: [
-      '100wc',
-      '500-2000 Ruud'
-    ],
-    times: createEventTimes(['02:00', '05:00', '08:15', '21:00']),
-    description: 'Invasion Event - Multiple maps',
-    following: false,
-    pinned: false
-  },
-  {
-    id: '20',
     name: 'Jewel Puppy',
     map: 'Noria',
     items: [
@@ -458,8 +453,21 @@ export const mockEvents: EventItem[] = [
       'Additional 1 ~ 3 random jewels',
       'Low chance for Dark Jewel and Custom Jewels'
     ],
-    times: createEveryHour35MinuteEvents(),
-    description: 'Invasion Event - Every hour at minute :35',
+    times: create35HourlyEvents(),
+    description: 'Invasion Event - Every hour at :35',
+    following: false,
+    pinned: false
+  },
+  {
+    id: '20',
+    name: 'Pouch of Blessing',
+    map: ['Lorencia', 'Noria', 'Devias', 'Elbeland'],
+    items: [
+      '100 WC',
+      '500 ~ 2000 Ruud'
+    ],
+    times: createEventTimes(['02:00', '05:00', '18:15', '21:00', '23:30']),
+    description: 'Invasion Event - Multiple spawn locations',
     following: false,
     pinned: false
   }
