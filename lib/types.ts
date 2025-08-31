@@ -420,7 +420,7 @@ export const mockEvents: EventItem[] = [
     description: 'Invasion Event',
     following: false,
     pinned: false
-  }
+  },
     {
     id: '18',
     name: 'Dead Fear',
@@ -434,7 +434,7 @@ export const mockEvents: EventItem[] = [
     description: 'Invasion Event - Every hour at :50',
     following: false,
     pinned: false
-  }
+  },
     {
     id: '19',
     name: 'Jewel Puppy',
