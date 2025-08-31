@@ -2,6 +2,7 @@ export interface EventItem {
   id: string;
   name: string;
   map: string;
+  maps: string[];
   items: string[];
   times: Date[];
   image?: string;
@@ -452,7 +453,7 @@ export const mockEvents: EventItem[] = [
   {
     id: '20',
     name: 'Pouch of Blessing',
-    map: ['Lorencia', 'Noria', 'Devias', 'Elbeland'],
+    maps: ['Lorencia', 'Noria', 'Devias', 'Elbeland'],
     items: [
       '100 GP',
       '500 ~ 3000 Ruud'],
