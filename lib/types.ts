@@ -128,7 +128,7 @@ export const mockEvents: EventItem[] = [
     name: 'Power Chicken!',
     map: 'Noria',
     items: ['150 WC', '200 ~ 2500 Ruud'],
-    times: createEventTimes(['02:00', '05:00', '08:00', '11:00', '14:00', '17:00', '20:00', '23:00']),
+    times: createEventTimes(['03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '00:00']),
     description: 'Invasion Event - Every 3 hours',
     following: false,
     pinned: false
