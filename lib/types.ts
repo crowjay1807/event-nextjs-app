@@ -82,6 +82,40 @@ function createHalfHourlyEvents(): Date[] {
   return dates;
 }
 
+// Create events at :50 of every hour
+function createEveryHour50MinuteEvents(): Date[] {
+  const dates: Date[] = [];
+  const now = new Date();
+  
+  for (let i = 0; i < 48; i++) { // Next 48 hours
+    const date = new Date(now);
+    date.setHours(now.getHours() + i);
+    date.setMinutes(50, 0, 0);
+    if (date > now) {
+      dates.push(date);
+    }
+  }
+  
+  return dates;
+}
+
+// Create events at :35 of every hour
+function createEveryHour35MinuteEvents(): Date[] {
+  const dates: Date[] = [];
+  const now = new Date();
+  
+  for (let i = 0; i < 48; i++) { // Next 48 hours
+    const date = new Date(now);
+    date.setHours(now.getHours() + i);
+    date.setMinutes(35, 0, 0);
+    if (date > now) {
+      dates.push(date);
+    }
+  }
+  
+  return dates;
+}
+
 // Create events every 3 hours
 function createEvery3HoursEvents(): Date[] {
   const dates: Date[] = [];
@@ -384,6 +418,48 @@ export const mockEvents: EventItem[] = [
     ],
     times: createEventTimes(['04:30', '09:30', '13:30', '18:30', '23:30']),
     description: 'Invasion Event',
+    following: false,
+    pinned: false
+  },
+  // NEW EVENTS ADDED
+  {
+    id: '18',
+    name: 'Dead Fear Gems',
+    map: 'Lorencia',
+    items: [
+      '50wc',
+      'Jewel of Harmony',
+      'Gemstone'
+    ],
+    times: createEveryHour50MinuteEvents(),
+    description: 'Invasion Event - Every hour at minute :50',
+    following: false,
+    pinned: false
+  },
+  {
+    id: '19',
+    name: 'Pouch of Blessing',
+    map: 'Lorencia, Noria, Devias, Elbeland',
+    items: [
+      '100wc',
+      '500-2000 Ruud'
+    ],
+    times: createEventTimes(['02:00', '05:00', '08:15', '21:00']),
+    description: 'Invasion Event - Multiple maps',
+    following: false,
+    pinned: false
+  },
+  {
+    id: '20',
+    name: 'Jewel Puppy',
+    map: 'Noria',
+    items: [
+      'Guaranteed x2 Jewel',
+      'Additional 1 ~ 3 random jewels',
+      'Low chance for Dark Jewel and Custom Jewels'
+    ],
+    times: createEveryHour35MinuteEvents(),
+    description: 'Invasion Event - Every hour at minute :35',
     following: false,
     pinned: false
   }
