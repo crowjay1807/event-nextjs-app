@@ -452,7 +452,7 @@ export const mockEvents: EventItem[] = [
   {
     id: '20',
     name: 'Pouch of Blessing',
-    maps: ['Lorencia', 'Noria', 'Devias', 'Elbeland'],
+    map: ['Lorencia', 'Noria', 'Devias', 'Elbeland'],
     items: [
       '100 GP',
       '500 ~ 3000 Ruud'],
