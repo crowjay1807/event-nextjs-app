@@ -423,7 +423,7 @@ export const mockEvents: EventItem[] = [
   },
     {
     id: '18',
-    name: 'Dead Fear',
+    name: 'Dead Fear Gems',
     map: 'Lorencia',
     items: [
       '50 WC',
@@ -448,7 +448,19 @@ export const mockEvents: EventItem[] = [
     description: 'Invasion Event - Every hour at :35',
     following: false,
     pinned: false
-  }
+  },
+  {
+    id: '20',
+    name: 'Pouch of Blessing',
+    map: ['Lorencia', 'Noria', 'Devias', 'Elbeland'],
+    items: [
+      '100 GP',
+      '500 ~ 3000 Ruud'],
+    times: createEventTimes([ '02:00', '06:15', '17:00', '21:15']),
+    description: 'Invasion Event',
+    following: false,
+    pinned: false
+  } 
 ];
 
 // Function to check if an event is currently active (within 15 minutes of start)
