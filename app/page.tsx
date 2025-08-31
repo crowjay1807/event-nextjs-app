@@ -253,6 +253,7 @@ export default function Home() {
           event.items.some(item => item.toLowerCase().includes(lowerQuery)) ||
           (event.description && event.description.toLowerCase().includes(lowerQuery))
         );
+        });
         break;
     }
 
