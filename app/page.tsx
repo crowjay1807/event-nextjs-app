@@ -51,14 +51,45 @@ export default function Home() {
   }, [dbVersion]);
 
   const loadEventsFromDatabase = () => {
-    // Load events from database or use defaults
-    let loadedEvents: EventItem[];
+    // Always use the latest mockEvents as the primary source of truth
+    // This ensures we always have the most up-to-date event data
+    let loadedEvents: EventItem[] = mockEvents;
     
-    if (DatabaseService.hasBeenModified()) {
-      loadedEvents = DatabaseService.getEvents();
+    // Check if we have saved preferences in database
+    const hasCustomData = DatabaseService.hasBeenModified();
+    
+    if (hasCustomData) {
+      // Get saved events from database
+      const savedEvents = DatabaseService.getEvents();
+      
+      // Merge with mockEvents - keep mockEvents structure but preserve any admin customizations
+      // This approach ensures we always have the latest mockEvents while keeping customizations
+      const mergedEvents = mockEvents.map(mockEvent => {
+        const savedEvent = savedEvents.find(saved => saved.id === mockEvent.id);
+        if (savedEvent) {
+          // Keep the saved event data but ensure times are from mockEvents (latest)
+          return {
+            ...savedEvent,
+            times: mockEvent.times, // Always use latest times from code
+            items: mockEvent.items, // Always use latest items from code
+            map: mockEvent.map,     // Always use latest map from code
+            description: mockEvent.description // Always use latest description
+          };
+        }
+        return mockEvent;
+      });
+      
+      // Add any new events from mockEvents that don't exist in saved events
+      const newEvents = mockEvents.filter(mockEvent => 
+        !savedEvents.some(saved => saved.id === mockEvent.id)
+      );
+      
+      loadedEvents = [...mergedEvents, ...newEvents];
+      
+      // Update database with merged events
+      DatabaseService.saveEvents(loadedEvents);
     } else {
-      loadedEvents = mockEvents;
-      // Save default events to database on first load
+      // First time load - save mockEvents to database
       DatabaseService.saveEvents(mockEvents);
     }
 
@@ -87,6 +118,12 @@ export default function Home() {
     }
     
     setIsLoading(false);
+  };
+
+  // Force refresh events from mockEvents (for debugging)
+  const forceRefreshEvents = () => {
+    DatabaseService.clearDatabase();
+    loadEventsFromDatabase();
   };
 
   // Auto-resort events every 30 seconds
@@ -297,6 +334,17 @@ export default function Home() {
                 >
                   <BellOff className="w-5 h-5" />
                   Enable Notifications
+                </button>
+              )}
+              
+              {/* Debug button - only show in development */}
+              {process.env.NODE_ENV === 'development' && (
+                <button
+                  onClick={forceRefreshEvents}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border transition-all bg-red-800/50 backdrop-blur text-white hover:bg-red-700/50 border-red-600 text-sm"
+                  title="Force refresh events (Dev only)"
+                >
+                  🔄 Refresh
                 </button>
               )}
               
