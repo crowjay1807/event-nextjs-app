@@ -147,7 +147,7 @@ export const mockEvents: EventItem[] = [
     map: 'Lorencia',
     items: ['100 ~ 1000 Ruud'],
     times: createHourlyEvents(),
-    description: 'Invasion Event - Spawns every hour',
+    description: 'Invasion Event - Spawns every hour (GMT+8)',
     following: false,
     pinned: false
   },
@@ -162,7 +162,7 @@ export const mockEvents: EventItem[] = [
       'Ability Crystal x5'
     ],
     times: createEventTimes(['00:30', '03:30', '06:30', '16:30', '19:30', '21:30']),
-    description: 'Invasion Event',
+    description: 'Invasion Event - GMT+8: 00:30, 03:30, 06:30, 16:30, 19:30, 21:30',
     following: false,
     pinned: false
   },
@@ -172,7 +172,7 @@ export const mockEvents: EventItem[] = [
     map: 'Noria',
     items: ['150 WC', '200 ~ 2500 Ruud'],
     times: createEvery3HoursEvents(),
-    description: 'Invasion Event - Every 3 hours starting from 00:00 (GMT+8)',
+    description: 'Invasion Event - Every 3 hours (GMT+8)',
     following: false,
     pinned: false
   },
@@ -193,7 +193,7 @@ export const mockEvents: EventItem[] = [
       'Golden Sentence'
     ],
     times: createEventTimes(['03:00', '06:00', '16:30', '19:30']),
-    description: 'Invasion Event',
+    description: 'Invasion Event - GMT+8: 03:00, 06:00, 16:30, 19:30',
     following: false,
     pinned: false
   },
@@ -203,7 +203,7 @@ export const mockEvents: EventItem[] = [
     map: 'Elbeland',
     items: ['300 GP', '300 ~ 2000 Ruud'],
     times: createEventTimes(['01:00', '03:00', '15:30', '20:00', '22:30']),
-    description: 'Invasion Event',
+    description: 'Invasion Event - GMT+8: 01:00, 03:00, 15:30, 20:00, 22:30',
     following: false,
     pinned: false
   },
@@ -219,7 +219,7 @@ export const mockEvents: EventItem[] = [
       'Jewel of Harmony (Durability: 2~5)'
     ],
     times: createEventTimes(['01:30', '04:00', '17:00', '20:30']),
-    description: 'Invasion Event',
+    description: 'Invasion Event - GMT+8: 01:30, 04:00, 17:00, 20:30',
     following: false,
     pinned: false
   },
@@ -238,7 +238,7 @@ export const mockEvents: EventItem[] = [
       '[Bound] Shining Temple Guard Reinforcement Stone'
     ],
     times: createEventTimes(['02:30', '05:00', '16:00', '21:00']),
-    description: 'Invasion Event',
+    description: 'Invasion Event - GMT+8: 02:30, 05:00, 16:00, 21:00',
     following: false,
     pinned: false
   },
@@ -248,7 +248,7 @@ export const mockEvents: EventItem[] = [
     map: 'Noria',
     items: ['50 GP', '200 ~ 1000 Ruud'],
     times: createHourlyEvents(),
-    description: 'Invasion Event - Every hour',
+    description: 'Invasion Event - Every hour (GMT+8)',
     following: false,
     pinned: false
   },
@@ -258,7 +258,7 @@ export const mockEvents: EventItem[] = [
     map: 'Scorched Canyon',
     items: ['300 WC', '1000 ~ 2500 Ruud'],
     times: createEventTimes(['03:45', '06:45', '19:45', '22:45']),
-    description: 'Invasion Event',
+    description: 'Invasion Event - GMT+8: 03:45, 06:45, 19:45, 22:45',
     following: false,
     pinned: false
   },
@@ -274,7 +274,7 @@ export const mockEvents: EventItem[] = [
       'Ability Enhancement Stone (Durability: 1/3/5)'
     ],
     times: createEventTimes(['07:25', '09:25', '11:25', '13:25']),
-    description: 'Invasion Event',
+    description: 'Invasion Event - GMT+8: 07:25, 09:25, 11:25, 13:25',
     following: false,
     pinned: false
   },
