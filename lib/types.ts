@@ -13,8 +13,8 @@ export interface EventItem {
 // Helper function to create today's date with specific time (GMT+7)
 function createEventTime(hour: number, minute: number = 0): Date {
   const date = new Date();
-  // Convert from GMT+2 to GMT+7 (add 5 hours)
-  const adjustedHour = (hour + 5) % 24;
+  // Convert from GMT+8 to GMT+7 (subtract 1 hour)
+  const adjustedHour = (hour - 1 + 24) % 24;
   date.setHours(adjustedHour, minute, 0, 0);
   
   // If the time has already passed today, set it for tomorrow
@@ -32,8 +32,8 @@ function createEventTimes(times: string[]): Date[] {
   
   times.forEach(timeStr => {
     const [hour, minute] = timeStr.split(':').map(Number);
-    // Convert from GMT+2 to GMT+7 (add 5 hours)
-    const adjustedHour = (hour + 5) % 24;
+    // Convert from GMT+8 to GMT+7 (subtract 1 hour)
+    const adjustedHour = (hour - 1 + 24) % 24;
     
     // Create dates for today and next 3 days
     for (let i = 0; i < 4; i++) {
@@ -116,14 +116,14 @@ function create35HourlyEvents(): Date[] {
   return dates;
 }
 
-// Create events every 3 hours starting from 00:00 (GMT+2)
+// Create events every 3 hours starting from 00:00 (GMT+8)
 function createEvery3HoursEvents(): Date[] {
   const dates: Date[] = [];
   const now = new Date();
   
-  // Starting times in GMT+2: 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00
-  // Convert to GMT+7: 05:00, 08:00, 11:00, 14:00, 17:00, 20:00, 23:00, 02:00
-  const startingHours = [5, 8, 11, 14, 17, 20, 23, 2]; // GMT+7 hours
+  // Starting times in GMT+8: 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00
+  // Convert to GMT+7: 23:00, 02:00, 05:00, 08:00, 11:00, 14:00, 17:00, 20:00
+  const startingHours = [23, 2, 5, 8, 11, 14, 17, 20]; // GMT+7 hours
   
   for (let day = 0; day < 3; day++) { // Next 3 days
     startingHours.forEach(hour => {
@@ -172,7 +172,7 @@ export const mockEvents: EventItem[] = [
     map: 'Noria',
     items: ['150 WC', '200 ~ 2500 Ruud'],
     times: createEvery3HoursEvents(),
-    description: 'Invasion Event - Every 3 hours starting from 00:00 (GMT+2)',
+    description: 'Invasion Event - Every 3 hours starting from 00:00 (GMT+8)',
     following: false,
     pinned: false
   },
@@ -296,7 +296,7 @@ export const mockEvents: EventItem[] = [
       'Ability Enhancement Stone (Durability: 3/5)'
     ],
     times: createEventTimes(['06:25', '08:25', '10:25', '12:00']),
-    description: 'Invasion Event',
+    description: 'Invasion Event - GMT+8: 06:25, 08:25, 10:25, 12:00',
     following: false,
     pinned: false
   },
@@ -333,7 +333,7 @@ export const mockEvents: EventItem[] = [
       'Talisman of Luck'
     ],
     times: createEventTimes(['00:00', '06:00', '12:00', '18:00']),
-    description: 'Invasion Event',
+    description: 'Invasion Event - GMT+8: 00:00, 06:00, 12:00, 18:00',
     following: false,
     pinned: false
   },
@@ -343,7 +343,7 @@ export const mockEvents: EventItem[] = [
     map: 'Devias 4',
     items: ['1000 WC', '2000 ~ 5000 Ruud'],
     times: createEventTimes(['02:00']),
-    description: 'Invasion Event - Daily at 07:00 AM (GMT+7)',
+    description: 'Invasion Event - Daily at 02:00 AM (GMT+8)',
     following: false,
     pinned: false
   },
@@ -366,7 +366,7 @@ export const mockEvents: EventItem[] = [
       'Talisman of Luck'
     ],
     times: createEventTimes(['02:30', '08:30', '15:30', '20:30']),
-    description: 'Invasion Event',
+    description: 'Invasion Event - GMT+8: 02:30, 08:30, 15:30, 20:30',
     following: false,
     pinned: false
   },
@@ -386,7 +386,7 @@ export const mockEvents: EventItem[] = [
       'Jewel of Harmony'
     ],
     times: createHalfHourlyEvents(),
-    description: 'Invasion Event - Every hour at :30',
+    description: 'Invasion Event - Every hour at :30 (GMT+8)',
     following: false,
     pinned: false
   },
@@ -409,7 +409,7 @@ export const mockEvents: EventItem[] = [
       '[Bound] Shining Temple Guard Reinforcement Stone (Durability: 5/7/10)'
     ],
     times: createEventTimes(['04:30', '09:30', '13:30', '18:30', '23:30']),
-    description: 'Invasion Event',
+    description: 'Invasion Event - GMT+8: 04:30, 09:30, 13:30, 18:30, 23:30',
     following: false,
     pinned: false
   },
@@ -426,7 +426,7 @@ export const mockEvents: EventItem[] = [
       'Seed Capsule'
     ],
     times: createEventTimes(['04:30', '09:30', '13:30', '18:30', '23:30']),
-    description: 'Invasion Event',
+    description: 'Invasion Event - GMT+8: 04:30, 09:30, 13:30, 18:30, 23:30',
     following: false,
     pinned: false
   },
@@ -440,7 +440,7 @@ export const mockEvents: EventItem[] = [
       'Gemstone'
     ],
     times: create50HourlyEvents(),
-    description: 'Invasion Event - Every hour at :50',
+    description: 'Invasion Event - Every hour at :50 (GMT+8)',
     following: false,
     pinned: false
   },
@@ -454,7 +454,7 @@ export const mockEvents: EventItem[] = [
       'Low chance for Dark Jewel and Custom Jewels'
     ],
     times: create35HourlyEvents(),
-    description: 'Invasion Event - Every hour at :35',
+    description: 'Invasion Event - Every hour at :35 (GMT+8)',
     following: false,
     pinned: false
   },
@@ -467,7 +467,7 @@ export const mockEvents: EventItem[] = [
       '500 ~ 2000 Ruud'
     ],
     times: createEventTimes(['02:00', '05:00', '18:15', '21:00', '23:30']),
-    description: 'Invasion Event - Multiple spawn locations',
+    description: 'Invasion Event - GMT+8: 02:00, 05:00, 18:15, 21:00, 23:30',
     following: false,
     pinned: false
   }
